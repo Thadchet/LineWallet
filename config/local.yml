@@ -1,6 +1,0 @@
-server:
-  host : "127.0.0.1"
-  port: "8000"
-
-mongodb:
-  mongo_uri: "mongodb+srv://thadchet:mongopassword@line-wallet.7t45q.mongodb.net/line-wallet?retryWrites=true&w=majority"
