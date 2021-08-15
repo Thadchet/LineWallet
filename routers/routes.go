@@ -6,7 +6,9 @@ import (
 	controller "line-wallet/controllers"
 	"line-wallet/repository"
 	"line-wallet/services"
+	"line-wallet/utils"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +18,7 @@ type route struct {
 	Method      string
 	Pattern     string
 	Endpoint    gin.HandlerFunc
+	AuthLevel   int
 }
 
 func Init(conf config.Config) {
@@ -30,14 +33,22 @@ func NewRouter(conf config.Config) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	v1 := router.Group("v1")
-	
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("line_user_id")
+	router.Use(cors.New(config))
+
+	api := router.Group("api")
+
 	repo := repository.NewRepo(conf)
-	handles := InitHandlers(conf, repo)
+	linebot := utils.NewLineService(conf)
+	handles := InitHandlers(conf, linebot, repo)
 	routes := newRoute(handles)
 
 	for _, ro := range routes {
-		v1.Handle(ro.Method, ro.Pattern, ro.Endpoint)
+		api.Handle(ro.Method, ro.Pattern, HandleAuthLevel(ro.AuthLevel, ro.Endpoint)...)
 	}
 
 	return router
@@ -46,13 +57,15 @@ func NewRouter(conf config.Config) *gin.Engine {
 type Handlers struct {
 	Health      controller.HealthHandler
 	Transaction controller.TransactionHandler
+	Webhook     controller.WebhookHandler
 }
 
-func InitHandlers(conf config.Config, repo repository.Repository) Handlers {
+func InitHandlers(conf config.Config, linebotService utils.LineService, repo repository.Repository) Handlers {
 	var handlers Handlers
-	service := services.NewService(conf, repo)
+	service := services.NewService(conf, linebotService, repo)
 	handlers.Health = controller.NewHealthHandler(conf)
 	handlers.Transaction = controller.NewTransactionHandler(conf, service)
+	handlers.Webhook = controller.NewWebhookHandler(conf, service)
 
 	return handlers
 }
@@ -60,16 +73,36 @@ func InitHandlers(conf config.Config, repo repository.Repository) Handlers {
 func newRoute(handler Handlers) []route {
 	return []route{
 		{
-			Name:     "health check",
-			Method:   "GET",
-			Pattern:  "/healthcheck",
-			Endpoint: handler.Health.Healthcheck,
+			Name:        "health check",
+			Description: "helth check",
+			Method:      "GET",
+			Pattern:     "/healthcheck",
+			Endpoint:    handler.Health.Healthcheck,
+			AuthLevel:   0,
 		},
 		{
-			Name:     "ping service",
-			Method:   "GET",
-			Pattern:  "/ping",
-			Endpoint: handler.Transaction.PingTransactionService,
+			Name:        "ping service",
+			Description: "ping service",
+			Method:      "GET",
+			Pattern:     "/ping",
+			Endpoint:    handler.Transaction.PingTransactionService,
+			AuthLevel:   0,
+		},
+		{
+			Name:        "webhook",
+			Description: "Web hook",
+			Method:      "POST",
+			Pattern:     "/webhook",
+			Endpoint:    handler.Webhook.HandleWebhook,
+			AuthLevel:   0,
+		},
+		{
+			Name:        "Add Txn",
+			Description: "Add txn",
+			Method:      "POST",
+			Pattern:     "/add_txn",
+			Endpoint:    handler.Transaction.AddTransaction,
+			AuthLevel:   1,
 		},
 	}
 }

@@ -11,6 +11,12 @@ type Config struct {
 	vn      *viper.Viper
 	Server  Server     `mapstructure:"server"`
 	MongoDB db.MongoDB `mapstructure:"mongodb"`
+	LineBot LineBot    `mapstructure:"line-bot"`
+}
+
+type LineBot struct {
+	ChannelAccessToken string `mapstructure:"channel-access-token"`
+	ChannelSecret      string `mapstructure:"channel-secret"`
 }
 
 type Server struct {
@@ -55,6 +61,14 @@ func (c *Config) GetHost() string {
 	return c.Server.Host
 }
 
-func (c *Config) GetMongoUri() *string {
-	return &c.MongoDB.MongoUri
+func (c *Config) GetMongoUri() string {
+	return c.MongoDB.MongoUri
+}
+
+func (c *Config) GetChannelSecret() string {
+	return c.LineBot.ChannelSecret
+}
+
+func (c *Config) GetChannelAccessToken() string {
+	return c.LineBot.ChannelAccessToken
 }

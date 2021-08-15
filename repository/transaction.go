@@ -13,11 +13,20 @@ type TransactionRepo struct {
 
 type ITransactionRepo interface {
 	Insert() error
+	InsertTransaction(m interface{}) error
 }
 
 func (t TransactionRepo) Insert() error {
 
 	m := bson.M{"a": "b"}
+	_, err := t.db.Collection("transactions").InsertOne(context.TODO(), m)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t TransactionRepo) InsertTransaction(m interface{}) error {
 	_, err := t.db.Collection("transactions").InsertOne(context.TODO(), m)
 	if err != nil {
 		return err
