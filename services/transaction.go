@@ -28,6 +28,7 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 	transaction := models.Transaction{
 		Amount:     req.Amount,
 		Category:   req.Category,
+		Memo:       req.Memo,
 		LineUserId: member.LineUserID,
 		CreatedAt:  time.Now(),
 	}

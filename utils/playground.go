@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"line-wallet/constants"
+	"time"
 
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
@@ -13,40 +15,106 @@ type PlayGroundService struct {
 func (s PlayGroundService) HandlePlayground(command string, replyToken string) {
 	switch command {
 	case "#a":
-		fmt.Println("Case1")
-		// Make Contents
-		var contents []linebot.FlexComponent
-		text := linebot.TextComponent{
-			Type:   linebot.FlexComponentTypeText,
-			Text:   "Brown Cafe",
-			Weight: "bold",
-			Size:   linebot.FlexTextSizeTypeXl,
-		}
-		contents = append(contents, &text)
-
 		// Make Body
+		day := time.Now().Day()
+		month := time.Now().Month()
+		year := time.Now().Year()
+
 		body := linebot.BoxComponent{
-			Type:     linebot.FlexComponentTypeBox,
-			Layout:   linebot.FlexBoxLayoutTypeVertical,
-			Contents: contents,
-		}
-		// Make Header
-		header := linebot.BoxComponent{
 			Type:   linebot.FlexComponentTypeBox,
 			Layout: linebot.FlexBoxLayoutTypeVertical,
-			// Spacing: linebot.FlexComponentSpacingTypeMd,
+			Contents: []linebot.FlexComponent{
+				&linebot.BoxComponent{
+					Type:   linebot.FlexComponentTypeBox,
+					Layout: linebot.FlexBoxLayoutTypeHorizontal,
+					Contents: []linebot.FlexComponent{
+						&linebot.TextComponent{
+							Text:   "Amount",
+							Weight: linebot.FlexTextWeightTypeBold,
+							Color:  constants.GrayColor,
+						},
+						&linebot.TextComponent{
+							Text:   fmt.Sprintf("%v %v", 1000, "Bath"),
+							Weight: linebot.FlexTextWeightTypeBold,
+							Align:  linebot.FlexComponentAlignTypeEnd,
+							Color:  constants.GrayColor,
+						},
+					},
+				},
+				&linebot.BoxComponent{
+					Type:   linebot.FlexComponentTypeBox,
+					Layout: linebot.FlexBoxLayoutTypeHorizontal,
+					Contents: []linebot.FlexComponent{
+						&linebot.TextComponent{
+							Text:   "Category",
+							Weight: linebot.FlexTextWeightTypeBold,
+							Color:  constants.GrayColor,
+						},
+						&linebot.TextComponent{
+							Text:   "Game",
+							Weight: linebot.FlexTextWeightTypeBold,
+							Align:  linebot.FlexComponentAlignTypeEnd,
+							Color:  constants.GrayColor,
+						},
+					},
+				},
+				&linebot.SeparatorComponent{
+					Margin: linebot.FlexComponentMarginTypeMd,
+					Type:   linebot.FlexComponentTypeBox,
+				},
+				&linebot.BoxComponent{
+					Type:   linebot.FlexComponentTypeBox,
+					Layout: linebot.FlexBoxLayoutTypeHorizontal,
+					Margin: linebot.FlexComponentMarginTypeMd,
+					Contents: []linebot.FlexComponent{
+						&linebot.TextComponent{
+							Text:   "Total",
+							Size:   linebot.FlexTextSizeTypeMd,
+							Weight: linebot.FlexTextWeightTypeBold,
+							Color:  constants.GreenColor,
+						},
+						&linebot.TextComponent{
+							Text:   "10000",
+							Size:   linebot.FlexTextSizeTypeMd,
+							Align:  linebot.FlexComponentAlignTypeEnd,
+							Weight: linebot.FlexTextWeightTypeBold,
+						},
+					},
+				},
+			},
+		}
+
+		// Make Header
+		header := linebot.BoxComponent{
+			Type:          linebot.FlexComponentTypeBox,
+			Layout:        linebot.FlexBoxLayoutTypeVertical,
+			Spacing:       linebot.FlexComponentSpacingTypeMd,
+			PaddingBottom: linebot.FlexComponentPaddingTypeNone,
 			Contents: []linebot.FlexComponent{
 				&linebot.TextComponent{
-					Text:  "BK Wallet",
-					Color: "#56ee74",
-				},
-				&linebot.TextComponent{
-					Text:   "Transaction",
-					Size:   linebot.FlexTextSizeTypeLg,
+					Text:   "BK Wallet",
 					Weight: linebot.FlexTextWeightTypeBold,
+					Color:  constants.GreenColor,
 				},
-				&linebot.TextComponent{
-					Text: "Name",
+				&linebot.BoxComponent{
+					Type:   linebot.FlexComponentTypeBox,
+					Layout: linebot.FlexBoxLayoutTypeVertical,
+					Contents: []linebot.FlexComponent{
+						&linebot.TextComponent{
+							Text:   "Transaction",
+							Size:   linebot.FlexTextSizeTypeXxl,
+							Weight: linebot.FlexTextWeightTypeBold,
+						},
+						&linebot.TextComponent{
+							Size:   linebot.FlexTextSizeTypeSm,
+							Weight: linebot.FlexTextWeightTypeRegular,
+							Color:  constants.GrayColor,
+							Text:   fmt.Sprintf("%v %v %v", day, month, year),
+						},
+					},
+				},
+				&linebot.SeparatorComponent{
+					Type: linebot.FlexComponentTypeBox,
 				},
 			},
 		}
@@ -59,6 +127,9 @@ func (s PlayGroundService) HandlePlayground(command string, replyToken string) {
 		// New Flex Message
 		flexMessage := linebot.NewFlexMessage("FlexWithCode", &bubble)
 		// Reply Message
-		s.LinebotService.ReplyMessage(replyToken, flexMessage)
+		_, err := s.LinebotService.ReplyMessage(replyToken, flexMessage)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 }

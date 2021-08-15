@@ -1,13 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"line-wallet/config"
 	"line-wallet/models"
 	"line-wallet/services"
 	"line-wallet/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
 type TransactionHandler struct {
@@ -44,6 +44,7 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 
 	member, err := t.memberService.FindMemberByLineUserID(c.Request.Header["Line_user_id"][0])
 	if err != nil {
+		fmt.Println(err.Error())
 		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
@@ -51,18 +52,18 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 	}
 
 	if err := t.transactionService.AddTransaction(req, *member); err != nil {
+		fmt.Println(err.Error())
 		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
 		return
 	}
 
-	leftBtn := linebot.NewMessageAction("Yes", "Yes clicked")
-	rightBtn := linebot.NewMessageAction("No", "No clicked")
-	template := linebot.NewConfirmTemplate("Are you John wick?", leftBtn, rightBtn)
-
-	message := linebot.NewTemplateMessage("Confirm Box.", template)
-	t.linebotService.PushMessage(member.LineUserID, message)
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo)
+	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err2 != nil {
+		fmt.Println(err.Error())
+	}
 
 	c.JSON(200, gin.H{
 		"message": req,

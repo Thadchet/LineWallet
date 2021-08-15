@@ -29,9 +29,10 @@ func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.Te
 	switch command {
 	case "Bk", "bk", "BK":
 		var ReplyButtons []*linebot.QuickReplyButton
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("เพิ่มรายการ", constants.HomePage)))
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("แก้ไขรายการ", "Hello")))
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("สรุปรายเดือน", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("💸 เพิ่มรายการ", constants.HomePage)))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("💰 เพิ่มรายรับ", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("⚙️ แก้ไขรายการ", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("📊 สรุปรายเดือน", "Hello")))
 
 		replyMessage := linebot.NewTextMessage(constants.ReplyMessage).WithQuickReplies(linebot.NewQuickReplyItems(ReplyButtons...))
 		_, err := w.LinebotService.ReplyMessage(replyToken, replyMessage)
