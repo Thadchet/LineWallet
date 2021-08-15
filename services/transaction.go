@@ -15,6 +15,7 @@ type TransactionService struct {
 type ITransactionService interface {
 	Ping() string
 	AddTransaction(req models.AddTransactionRequest, member models.Member) error
+	GetTreansactions(line_user_id string) ([]models.Transaction, error)
 }
 
 func (t TransactionService) Ping() string {
@@ -36,4 +37,12 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 		return err
 	}
 	return nil
+}
+
+func (t TransactionService) GetTreansactions(line_user_id string) ([]models.Transaction, error) {
+	transactions, err := t.Repo.Transaction.GetTransactions(line_user_id)
+	if err != nil {
+		return nil, err
+	}
+	return transactions, nil
 }

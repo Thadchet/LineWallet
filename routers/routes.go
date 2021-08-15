@@ -104,5 +104,13 @@ func newRoute(handler Handlers) []route {
 			Endpoint:    handler.Transaction.AddTransaction,
 			AuthLevel:   1,
 		},
+		{
+			Name:        "Get My Transactions",
+			Description: "Get My Transactions",
+			Method:      "GET",
+			Pattern:     "/transactions",
+			Endpoint:    handler.Transaction.GetTransactions,
+			AuthLevel:   1,
+		},
 	}
 }

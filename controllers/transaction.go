@@ -69,3 +69,27 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 		"message": req,
 	})
 }
+
+func (t TransactionHandler) GetTransactions(c *gin.Context) {
+
+	member, err := t.memberService.FindMemberByLineUserID(c.Request.Header["Line_user_id"][0])
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	res, err := t.transactionService.GetTreansactions(member.LineUserID)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": res,
+	})
+}
