@@ -76,7 +76,7 @@ func (t TransactionHandler) GetTransactions(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 		c.JSON(400, gin.H{
-			"message": err.Error(),
+			"data": err.Error(),
 		})
 		return
 	}
@@ -85,11 +85,11 @@ func (t TransactionHandler) GetTransactions(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 		c.JSON(400, gin.H{
-			"message": err.Error(),
+			"data": err.Error(),
 		})
 		return
 	}
 	c.JSON(200, gin.H{
-		"message": res,
+		"data": res,
 	})
 }

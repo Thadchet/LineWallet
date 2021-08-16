@@ -5,6 +5,8 @@ import (
 	"line-wallet/models"
 	"line-wallet/repository"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TransactionService struct {
@@ -26,7 +28,9 @@ func (t TransactionService) Ping() string {
 }
 
 func (t TransactionService) AddTransaction(req models.AddTransactionRequest, member models.Member) error {
+	txnID := primitive.NewObjectID()
 	transaction := models.Transaction{
+		ID:         txnID,
 		Amount:     req.Amount,
 		Category:   req.Category,
 		Memo:       req.Memo,

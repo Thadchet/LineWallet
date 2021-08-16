@@ -31,7 +31,7 @@ func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.Te
 		var ReplyButtons []*linebot.QuickReplyButton
 		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("💸 เพิ่มรายการ", constants.HomePage)))
 		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("💰 เพิ่มรายรับ", "Hello")))
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("⚙️ แก้ไขรายการ", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("⚙️ แก้ไขรายการ", constants.EditPage)))
 		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("📊 สรุปรายเดือน", "Hello")))
 
 		replyMessage := linebot.NewTextMessage(constants.ReplyMessage).WithQuickReplies(linebot.NewQuickReplyItems(ReplyButtons...))
