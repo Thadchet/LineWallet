@@ -20,3 +20,12 @@ type Transaction struct {
 	LineUserId string             `json:"line_user_id"`
 	CreatedAt  time.Time          `json:"create_at"`
 }
+
+type Income struct {
+	ID         primitive.ObjectID `bson:"_id"`
+	Amount     string             `json:"amount"`
+	Month      string             `json:"month"`
+	Memo       string             `json:"memo"`
+	LineUserId string             `json:"line_user_id"`
+	CreatedAt  time.Time          `json:"create_at"`
+}

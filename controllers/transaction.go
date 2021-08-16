@@ -51,7 +51,7 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 		return
 	}
 
-	if err := t.transactionService.AddTransaction(req, *member); err != nil {
+	if err := t.transactionService.AddTransaction(req, member); err != nil {
 		fmt.Println(err.Error())
 		c.JSON(400, gin.H{
 			"message": err.Error(),
@@ -59,10 +59,13 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 		return
 	}
 
-	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo)
+	// TODO calculate total txn
+	totalTxn := 200
+
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, member.Remaining)
 	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
 	if err2 != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err2.Error())
 	}
 
 	c.JSON(200, gin.H{
@@ -91,5 +94,109 @@ func (t TransactionHandler) GetTransactions(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"data": res,
+	})
+}
+
+func (t TransactionHandler) GetTransactionByID(c *gin.Context) {
+
+	id := c.Param("id")
+	_, err := t.memberService.FindMemberByLineUserID(c.Request.Header["Line_user_id"][0])
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"data": err.Error(),
+		})
+		return
+	}
+
+	res, err := t.transactionService.GetTransactionByID(id)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"data": err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"data": &res,
+	})
+}
+
+func (t TransactionHandler) EditTransactionByID(c *gin.Context) {
+
+	id := c.Param("id")
+	var req models.AddTransactionRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	member, err := t.memberService.FindMemberByLineUserID(c.Request.Header["Line_user_id"][0])
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"data": err.Error(),
+		})
+		return
+	}
+
+	res, err := t.transactionService.EditTransactionByID(req, id, *member)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"data": err.Error(),
+		})
+		return
+	}
+
+	// TODO calculate totalTxn and remaining
+	totalTxn := 300
+	remaining := 400
+
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, remaining)
+	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err2 != nil {
+		fmt.Println(err.Error())
+	}
+	c.JSON(200, gin.H{
+		"data": &res,
+	})
+}
+
+func (t TransactionHandler) AddIncome(c *gin.Context) {
+	var req models.Income
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	member, err := t.memberService.FindMemberByLineUserID(c.Request.Header["Line_user_id"][0])
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	if err := t.transactionService.AddIncome(req, *member); err != nil {
+		fmt.Println(err.Error())
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Month, req.Memo)
+	// _, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	// if err2 != nil {
+	// 	fmt.Println(err.Error())
+	// }
+
+	c.JSON(200, gin.H{
+		"message": req,
 	})
 }

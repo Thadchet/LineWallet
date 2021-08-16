@@ -3,16 +3,19 @@ package utils
 import (
 	"fmt"
 	"line-wallet/constants"
+	"strconv"
 	"time"
 
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-func TransactionCompleteFlex(amount string, category string, memo string) *linebot.FlexMessage {
+func TransactionCompleteFlex(amount string, category string, memo string, total, remaining int) *linebot.FlexMessage {
 	day := time.Now().Day()
 	month := time.Now().Month()
 	year := time.Now().Year()
-
+	if memo == "" {
+		memo = "-"
+	}
 	body := linebot.BoxComponent{
 		Type:   linebot.FlexComponentTypeBox,
 		Layout: linebot.FlexBoxLayoutTypeVertical,
@@ -74,20 +77,44 @@ func TransactionCompleteFlex(amount string, category string, memo string) *lineb
 			},
 			&linebot.BoxComponent{
 				Type:   linebot.FlexComponentTypeBox,
-				Layout: linebot.FlexBoxLayoutTypeHorizontal,
+				Layout: linebot.FlexBoxLayoutTypeVertical,
 				Margin: linebot.FlexComponentMarginTypeMd,
 				Contents: []linebot.FlexComponent{
-					&linebot.TextComponent{
-						Text:   "Total",
-						Size:   linebot.FlexTextSizeTypeMd,
-						Weight: linebot.FlexTextWeightTypeBold,
-						Color:  constants.GreenColor,
+					&linebot.BoxComponent{
+						Type:   linebot.FlexComponentTypeBox,
+						Layout: linebot.FlexBoxLayoutTypeHorizontal,
+						Contents: []linebot.FlexComponent{
+							&linebot.TextComponent{
+								Text:   "Total",
+								Size:   linebot.FlexTextSizeTypeMd,
+								Weight: linebot.FlexTextWeightTypeBold,
+								Color:  constants.GreenColor,
+							},
+							&linebot.TextComponent{
+								Text:   strconv.Itoa(total),
+								Size:   linebot.FlexTextSizeTypeMd,
+								Align:  linebot.FlexComponentAlignTypeEnd,
+								Weight: linebot.FlexTextWeightTypeBold,
+							},
+						},
 					},
-					&linebot.TextComponent{
-						Text:   "10000",
-						Size:   linebot.FlexTextSizeTypeMd,
-						Align:  linebot.FlexComponentAlignTypeEnd,
-						Weight: linebot.FlexTextWeightTypeBold,
+					&linebot.BoxComponent{
+						Type:   linebot.FlexComponentTypeBox,
+						Layout: linebot.FlexBoxLayoutTypeHorizontal,
+						Contents: []linebot.FlexComponent{
+							&linebot.TextComponent{
+								Text:   "Remaining",
+								Size:   linebot.FlexTextSizeTypeMd,
+								Weight: linebot.FlexTextWeightTypeBold,
+								Color:  constants.GreenColor,
+							},
+							&linebot.TextComponent{
+								Text:   strconv.Itoa(remaining),
+								Size:   linebot.FlexTextSizeTypeMd,
+								Align:  linebot.FlexComponentAlignTypeEnd,
+								Weight: linebot.FlexTextWeightTypeBold,
+							},
+						},
 					},
 				},
 			},

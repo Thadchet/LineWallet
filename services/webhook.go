@@ -40,7 +40,6 @@ func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.Te
 			fmt.Println(err.Error())
 		}
 	case "#a":
-		fmt.Println("Case Playground")
 		w.PlayGroundService.HandlePlayground("#a", replyToken)
 	default:
 		break

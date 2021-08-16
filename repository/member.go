@@ -16,6 +16,7 @@ type MemberRepo struct {
 type IMemberRepo interface {
 	CreateMember(member models.Member) error
 	FindMemberByLineUserID(line_use_id string) (*models.Member, error)
+	UpdateRemainingBalance(line_use_id string, amount int) error
 }
 
 func (t MemberRepo) CreateMember(member models.Member) error {
@@ -42,4 +43,19 @@ func (t MemberRepo) FindMemberByLineUserID(line_use_id string) (*models.Member, 
 		return nil, err
 	}
 	return &result, nil
+}
+
+func (t MemberRepo) UpdateRemainingBalance(line_use_id string, amount int) error {
+
+	filter := bson.M{"lineuserid": line_use_id}
+	update := bson.M{
+		"$set": bson.M{
+			"remaining": amount,
+		},
+	}
+	_, err := t.db.Collection("member").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -112,5 +112,29 @@ func newRoute(handler Handlers) []route {
 			Endpoint:    handler.Transaction.GetTransactions,
 			AuthLevel:   1,
 		},
+		{
+			Name:        "Get My Transaction By ID",
+			Description: "Get My Transaction By ID",
+			Method:      "GET",
+			Pattern:     "/transaction/:id",
+			Endpoint:    handler.Transaction.GetTransactionByID,
+			AuthLevel:   1,
+		},
+		{
+			Name:        "Edit Transaction By ID",
+			Description: "Edit Transaction By ID",
+			Method:      "POST",
+			Pattern:     "/transaction/edit/:id",
+			Endpoint:    handler.Transaction.EditTransactionByID,
+			AuthLevel:   1,
+		},
+		{
+			Name:        "Add Income",
+			Description: "Add Income",
+			Method:      "POST",
+			Pattern:     "/income",
+			Endpoint:    handler.Transaction.AddIncome,
+			AuthLevel:   1,
+		},
 	}
 }

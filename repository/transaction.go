@@ -6,6 +6,7 @@ import (
 	"line-wallet/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -17,6 +18,8 @@ type ITransactionRepo interface {
 	Insert() error
 	InsertTransaction(m interface{}) error
 	GetTransactions(line_user_id string) ([]models.Transaction, error)
+	GetTransactionByID(ID string) (*models.Transaction, error)
+	UpdateTransactionByID(amount, category, memo string, id string) (*mongo.UpdateResult, error)
 }
 
 func (t TransactionRepo) Insert() error {
@@ -51,4 +54,36 @@ func (t TransactionRepo) GetTransactions(line_user_id string) ([]models.Transact
 		fmt.Println(err.Error())
 	}
 	return result, nil
+}
+
+func (t TransactionRepo) GetTransactionByID(ID string) (*models.Transaction, error) {
+	var result *models.Transaction
+	objID, _ := primitive.ObjectIDFromHex(ID)
+	filter := bson.M{
+		"_id": objID,
+	}
+	if err := t.db.Collection("transactions").FindOne(context.TODO(), filter).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (t TransactionRepo) UpdateTransactionByID(amount, category, memo, id string) (*mongo.UpdateResult, error) {
+
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{
+		"_id": objID,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"amount":   amount,
+			"category": category,
+			"memo":     memo,
+		},
+	}
+	updated, err := t.db.Collection("transactions").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
 }

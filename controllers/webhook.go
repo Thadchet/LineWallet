@@ -28,8 +28,6 @@ func (t WebhookHandler) HandleWebhook(c *gin.Context) {
 
 	events, _ := t.linebotService.ParseRequest(c.Request)
 	for _, event := range events {
-		fmt.Println("Type ==> ", event.Type)
-
 		message := event.Message
 		switch event.Type {
 		case linebot.EventTypeMessage:
