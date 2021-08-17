@@ -59,15 +59,6 @@ func (t TransactionHandler) AddTransaction(c *gin.Context) {
 		return
 	}
 
-	// TODO calculate total txn
-	totalTxn := 200
-
-	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, member.Remaining)
-	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
-	if err2 != nil {
-		fmt.Println(err2.Error())
-	}
-
 	c.JSON(200, gin.H{
 		"message": req,
 	})
@@ -151,8 +142,8 @@ func (t TransactionHandler) EditTransactionByID(c *gin.Context) {
 	}
 
 	// TODO calculate totalTxn and remaining
-	totalTxn := 300
-	remaining := 400
+	totalTxn := 300.00
+	remaining := 400.00
 
 	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, remaining)
 	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)

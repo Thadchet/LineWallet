@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"line-wallet/models"
+	"line-wallet/utils"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,6 +22,7 @@ type ITransactionRepo interface {
 	GetTransactions(line_user_id string) ([]models.Transaction, error)
 	GetTransactionByID(ID string) (*models.Transaction, error)
 	UpdateTransactionByID(amount, category, memo string, id string) (*mongo.UpdateResult, error)
+	FilterTransactionCurrentMonth() ([]models.Transaction, error)
 }
 
 func (t TransactionRepo) Insert() error {
@@ -86,4 +89,30 @@ func (t TransactionRepo) UpdateTransactionByID(amount, category, memo, id string
 		return nil, err
 	}
 	return updated, nil
+}
+
+func (t TransactionRepo) FilterTransactionCurrentMonth() ([]models.Transaction, error) {
+	currentMonth := time.Now().Month().String()
+	amountDay := utils.GetMaxDay(currentMonth)
+	dateFrom := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local)
+	dateTo := time.Date(time.Now().Year(), time.Now().Month(), amountDay, 0, 0, 0, 0, time.Local)
+
+	fmt.Println(dateFrom)
+	fmt.Println(dateTo)
+
+	filter := bson.M{
+		"createdat": bson.M{
+			"$gte": dateFrom,
+			"$lte": dateTo,
+		},
+	}
+	cursors, err := t.db.Collection("transactions").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	var result []models.Transaction
+	if err = cursors.All(context.TODO(), &result); err != nil {
+		fmt.Println(err.Error())
+	}
+	return result, nil
 }

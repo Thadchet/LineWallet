@@ -18,8 +18,9 @@ func NewService(conf config.Config, linebotService utils.ILineService, repo repo
 	var services Services
 
 	transactionService := TransactionService{
-		Conf: conf,
-		Repo: repo,
+		Conf:           conf,
+		Repo:           repo,
+		linebotService: linebotService,
 	}
 
 	playGroundService := utils.PlayGroundService{

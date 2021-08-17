@@ -5,6 +5,7 @@ import (
 	"line-wallet/config"
 	"line-wallet/models"
 	"line-wallet/repository"
+	"line-wallet/utils"
 	"strconv"
 	"time"
 
@@ -12,8 +13,9 @@ import (
 )
 
 type TransactionService struct {
-	Conf config.Config
-	Repo repository.Repository
+	Conf           config.Config
+	Repo           repository.Repository
+	linebotService utils.ILineService
 }
 
 type ITransactionService interface {
@@ -32,6 +34,21 @@ func (t TransactionService) Ping() string {
 	return "Pong"
 }
 
+func (t TransactionService) calculateTotalTxnCurrentMonth() *float64 {
+
+	res, err := t.Repo.Transaction.FilterTransactionCurrentMonth()
+	if err != nil {
+		return nil
+	}
+	total := 0.0
+	for _, txn := range res {
+		fmt.Println(txn)
+		amount, _ := strconv.ParseFloat(txn.Amount, 64)
+		total += amount
+	}
+	return &total
+}
+
 func (t TransactionService) AddTransaction(req models.AddTransactionRequest, member *models.Member) error {
 	txnID := primitive.NewObjectID()
 	transaction := models.Transaction{
@@ -45,13 +62,21 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
 		return err
 	}
-	amount, _ := strconv.Atoi(req.Amount)
+
+	amount, _ := strconv.ParseFloat(req.Amount, 64)
 	remaining := member.GetRemaining() - amount
 	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, remaining); err != nil {
 		return err
 	}
 	member.UpdateRemaining(req.Amount)
 
+	totalTxn := t.calculateTotalTxnCurrentMonth()
+	fmt.Println("totalTxn ==> ", *totalTxn)
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, *totalTxn, member.Remaining)
+	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err2 != nil {
+		fmt.Println(err2.Error())
+	}
 	return nil
 }
 
@@ -94,7 +119,9 @@ func (t TransactionService) AddIncome(req models.Income, member models.Member) e
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
 		return err
 	}
-	amount, _ := strconv.Atoi(req.Amount)
+
+	amount, _ := strconv.ParseFloat(req.Amount, 64)
+
 	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, amount); err != nil {
 		return err
 	}

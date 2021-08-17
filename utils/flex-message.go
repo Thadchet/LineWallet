@@ -9,13 +9,16 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-func TransactionCompleteFlex(amount string, category string, memo string, total, remaining int) *linebot.FlexMessage {
+func TransactionCompleteFlex(amount string, category string, memo string, total float64, remaining float64) *linebot.FlexMessage {
 	day := time.Now().Day()
 	month := time.Now().Month()
 	year := time.Now().Year()
 	if memo == "" {
 		memo = "-"
 	}
+
+	totalStr := strconv.FormatFloat(total, 'f', 2, 64)
+	remainingStr := strconv.FormatFloat(total, 'f', 2, 64)
 	body := linebot.BoxComponent{
 		Type:   linebot.FlexComponentTypeBox,
 		Layout: linebot.FlexBoxLayoutTypeVertical,
@@ -91,7 +94,7 @@ func TransactionCompleteFlex(amount string, category string, memo string, total,
 								Color:  constants.GreenColor,
 							},
 							&linebot.TextComponent{
-								Text:   strconv.Itoa(total),
+								Text:   totalStr,
 								Size:   linebot.FlexTextSizeTypeMd,
 								Align:  linebot.FlexComponentAlignTypeEnd,
 								Weight: linebot.FlexTextWeightTypeBold,
@@ -109,7 +112,7 @@ func TransactionCompleteFlex(amount string, category string, memo string, total,
 								Color:  constants.GreenColor,
 							},
 							&linebot.TextComponent{
-								Text:   strconv.Itoa(remaining),
+								Text:   remainingStr,
 								Size:   linebot.FlexTextSizeTypeMd,
 								Align:  linebot.FlexComponentAlignTypeEnd,
 								Weight: linebot.FlexTextWeightTypeBold,
