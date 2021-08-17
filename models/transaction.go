@@ -19,6 +19,7 @@ type Transaction struct {
 	Memo       string             `json:"memo"`
 	LineUserId string             `json:"line_user_id"`
 	CreatedAt  time.Time          `json:"create_at"`
+	Type       string             `json:"type"`
 }
 
 type Income struct {
@@ -28,4 +29,5 @@ type Income struct {
 	Memo       string             `json:"memo"`
 	LineUserId string             `json:"line_user_id"`
 	CreatedAt  time.Time          `json:"create_at"`
+	Type       string             `json:"type"`
 }

@@ -105,6 +105,7 @@ func (t TransactionRepo) FilterTransactionCurrentMonth() ([]models.Transaction, 
 			"$gte": dateFrom,
 			"$lte": dateTo,
 		},
+		"type": "txn",
 	}
 	cursors, err := t.db.Collection("transactions").Find(context.TODO(), filter)
 	if err != nil {

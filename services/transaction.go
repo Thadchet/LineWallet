@@ -58,6 +58,7 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 		Memo:       req.Memo,
 		LineUserId: member.LineUserID,
 		CreatedAt:  time.Now(),
+		Type:       "txn",
 	}
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
 		return err
@@ -115,6 +116,7 @@ func (t TransactionService) AddIncome(req models.Income, member models.Member) e
 		Memo:       req.Memo,
 		LineUserId: member.LineUserID,
 		CreatedAt:  time.Now(),
+		Type:       "income",
 	}
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
 		return err

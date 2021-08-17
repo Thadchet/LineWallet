@@ -18,7 +18,7 @@ func TransactionCompleteFlex(amount string, category string, memo string, total 
 	}
 
 	totalStr := strconv.FormatFloat(total, 'f', 2, 64)
-	remainingStr := strconv.FormatFloat(total, 'f', 2, 64)
+	remainingStr := strconv.FormatFloat(remaining, 'f', 2, 64)
 	body := linebot.BoxComponent{
 		Type:   linebot.FlexComponentTypeBox,
 		Layout: linebot.FlexBoxLayoutTypeVertical,
