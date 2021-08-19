@@ -13,6 +13,8 @@ type MemberRepo struct {
 	db *mongo.Database
 }
 
+//go:generate mockgen -destination=../mocks/repository/mock_member.go -source=member.go
+
 type IMemberRepo interface {
 	CreateMember(member models.Member) error
 	FindMemberByLineUserID(line_use_id string) (*models.Member, error)

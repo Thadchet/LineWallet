@@ -17,6 +17,8 @@ type TransactionRepo struct {
 	db *mongo.Database
 }
 
+//go:generate mockgen -destination=../mocks/repository/mock_transaction.go -source=transaction.go 
+
 type ITransactionRepo interface {
 	Insert() error
 	InsertTransaction(m interface{}) error

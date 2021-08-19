@@ -89,7 +89,7 @@ func TransactionCompleteFlex(amount string, category string, memo string, total 
 						Layout: linebot.FlexBoxLayoutTypeHorizontal,
 						Contents: []linebot.FlexComponent{
 							&linebot.TextComponent{
-								Text:   "Total",
+								Text:   "Total Txn",
 								Size:   linebot.FlexTextSizeTypeMd,
 								Weight: linebot.FlexTextWeightTypeBold,
 								Color:  constants.GreenColor,
@@ -185,12 +185,12 @@ func SummaryCurrentMonth(txns []models.Transaction, incomes []models.Income, tot
 			Contents: []linebot.FlexComponent{
 				&linebot.TextComponent{
 					Text:   fmt.Sprintf("%v. %v", index+1, income.Type),
-					Weight: linebot.FlexTextWeightTypeBold,
+					Weight: linebot.FlexTextWeightTypeRegular,
 					Color:  constants.GrayColor,
 				},
 				&linebot.TextComponent{
 					Text:   income.Amount,
-					Weight: linebot.FlexTextWeightTypeBold,
+					Weight: linebot.FlexTextWeightTypeRegular,
 					Align:  linebot.FlexComponentAlignTypeEnd,
 					Color:  constants.GrayColor,
 				},
@@ -206,12 +206,12 @@ func SummaryCurrentMonth(txns []models.Transaction, incomes []models.Income, tot
 			Contents: []linebot.FlexComponent{
 				&linebot.TextComponent{
 					Text:   fmt.Sprintf("%v. %v", index+1, txn.Category),
-					Weight: linebot.FlexTextWeightTypeBold,
+					Weight: linebot.FlexTextWeightTypeRegular,
 					Color:  constants.GrayColor,
 				},
 				&linebot.TextComponent{
 					Text:   txn.Amount,
-					Weight: linebot.FlexTextWeightTypeBold,
+					Weight: linebot.FlexTextWeightTypeRegular,
 					Align:  linebot.FlexComponentAlignTypeEnd,
 					Color:  constants.GrayColor,
 				},
@@ -234,7 +234,7 @@ func SummaryCurrentMonth(txns []models.Transaction, incomes []models.Income, tot
 				Layout: linebot.FlexBoxLayoutTypeHorizontal,
 				Contents: []linebot.FlexComponent{
 					&linebot.TextComponent{
-						Text:   "Total",
+						Text:   "Total Txn",
 						Size:   linebot.FlexTextSizeTypeMd,
 						Weight: linebot.FlexTextWeightTypeBold,
 						Color:  constants.GreenColor,
@@ -280,11 +280,11 @@ func SummaryCurrentMonth(txns []models.Transaction, incomes []models.Income, tot
 		Spacing:       linebot.FlexComponentSpacingTypeMd,
 		PaddingBottom: linebot.FlexComponentPaddingTypeNone,
 		Contents: []linebot.FlexComponent{
-			&linebot.TextComponent{
-				Text:   "BK Wallet",
-				Weight: linebot.FlexTextWeightTypeBold,
-				Color:  constants.GreenColor,
-			},
+			// &linebot.TextComponent{
+			// 	Text:   "BK Wallet",
+			// 	Weight: linebot.FlexTextWeightTypeBold,
+			// 	Color:  constants.GreenColor,
+			// },
 			&linebot.BoxComponent{
 				Type:   linebot.FlexComponentTypeBox,
 				Layout: linebot.FlexBoxLayoutTypeVertical,
@@ -395,7 +395,7 @@ func IncomeCompleteFlex(amount, month, memo string, total float64) *linebot.Flex
 						Layout: linebot.FlexBoxLayoutTypeHorizontal,
 						Contents: []linebot.FlexComponent{
 							&linebot.TextComponent{
-								Text:   "Total",
+								Text:   "Total Txn",
 								Size:   linebot.FlexTextSizeTypeMd,
 								Weight: linebot.FlexTextWeightTypeBold,
 								Color:  constants.GreenColor,

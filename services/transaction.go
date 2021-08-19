@@ -18,6 +18,8 @@ type TransactionService struct {
 	linebotService utils.ILineService
 }
 
+//go:generate mockgen -destination=../mocks/services/mock_transaction.go -source=transaction.go
+
 type ITransactionService interface {
 	Ping() string
 	AddTransaction(req models.AddTransactionRequest, member *models.Member) error
@@ -37,18 +39,18 @@ func (t TransactionService) Ping() string {
 	return "Pong"
 }
 
-func (t TransactionService) calculateTotalTxnCurrentMonth(line_user_id string) *float64 {
+func (t TransactionService) calculateTotalTxnCurrentMonth(line_user_id string) float64 {
 
 	res, err := t.Repo.Transaction.FilterTransactionCurrentMonth(line_user_id)
 	if err != nil {
-		return nil
+		return 0.0
 	}
 	total := 0.0
 	for _, txn := range res {
 		amount, _ := strconv.ParseFloat(txn.Amount, 64)
 		total += amount
 	}
-	return &total
+	return total
 }
 
 func (t TransactionService) AddTransaction(req models.AddTransactionRequest, member *models.Member) error {
@@ -76,7 +78,7 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 
 	totalTxn := t.calculateTotalTxnCurrentMonth(member.LineUserID)
 
-	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, *totalTxn, member.Remaining)
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, member.Remaining)
 	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
 	if err2 != nil {
 		log.Println(err2.Error())
@@ -117,13 +119,13 @@ func (t TransactionService) EditTransactionByID(req models.AddTransactionRequest
 		amount, _ := strconv.ParseFloat(income.Amount, 64)
 		totalIncome += amount
 	}
-	remaining := totalIncome - *totalTxn
+	remaining := totalIncome - totalTxn
 	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, remaining); err != nil {
 		log.Printf("UpdateRemainingBalance error %v", err.Error())
 		return nil, err
 	}
 
-	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, *totalTxn, remaining)
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, totalTxn, remaining)
 	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
 	if err2 != nil {
 		log.Println(err.Error())
@@ -232,7 +234,7 @@ func (t TransactionService) EditIncomeByID(req models.Income, id string, member 
 		amount, _ := strconv.ParseFloat(income.Amount, 64)
 		totalIncome += amount
 	}
-	remaining := totalIncome - *totalTxn
+	remaining := totalIncome - totalTxn
 	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, remaining); err != nil {
 		log.Printf("UpdateRemainingBalance error %v", err.Error())
 		return nil, err

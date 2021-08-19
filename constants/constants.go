@@ -11,6 +11,6 @@ const (
 )
 
 const (
-	GrayColor  string = "#969696"
+	GrayColor  string = "#808080"
 	GreenColor string = "#219447"
 )

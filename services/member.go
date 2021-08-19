@@ -11,6 +11,8 @@ type MemberService struct {
 	Repo repository.Repository
 }
 
+//go:generate mockgen -destination=../mocks/services/mock_member.go -source=member.go
+
 type IMemberService interface {
 	FindMemberByLineUserID(line_user_id string) (*models.Member, error)
 }
