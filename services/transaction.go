@@ -1,11 +1,11 @@
 package services
 
 import (
-	"fmt"
 	"line-wallet/config"
 	"line-wallet/models"
 	"line-wallet/repository"
 	"line-wallet/utils"
+	"log"
 	"strconv"
 	"time"
 
@@ -25,6 +25,9 @@ type ITransactionService interface {
 	GetTransactionByID(ID string) (*models.Transaction, error)
 	EditTransactionByID(req models.AddTransactionRequest, id string, member models.Member) (*models.Transaction, error)
 	AddIncome(req models.Income, member models.Member) error
+	SummaryCurrentMonth(replyToken, line_user_id string)
+	GetIncomeByID(ID string) (*models.Income, error)
+	EditIncomeByID(req models.Income, id string, member models.Member) (*models.Income, error)
 }
 
 func (t TransactionService) Ping() string {
@@ -34,15 +37,14 @@ func (t TransactionService) Ping() string {
 	return "Pong"
 }
 
-func (t TransactionService) calculateTotalTxnCurrentMonth() *float64 {
+func (t TransactionService) calculateTotalTxnCurrentMonth(line_user_id string) *float64 {
 
-	res, err := t.Repo.Transaction.FilterTransactionCurrentMonth()
+	res, err := t.Repo.Transaction.FilterTransactionCurrentMonth(line_user_id)
 	if err != nil {
 		return nil
 	}
 	total := 0.0
 	for _, txn := range res {
-		fmt.Println(txn)
 		amount, _ := strconv.ParseFloat(txn.Amount, 64)
 		total += amount
 	}
@@ -58,6 +60,7 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 		Memo:       req.Memo,
 		LineUserId: member.LineUserID,
 		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 		Type:       "txn",
 	}
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
@@ -71,12 +74,12 @@ func (t TransactionService) AddTransaction(req models.AddTransactionRequest, mem
 	}
 	member.UpdateRemaining(req.Amount)
 
-	totalTxn := t.calculateTotalTxnCurrentMonth()
-	fmt.Println("totalTxn ==> ", *totalTxn)
+	totalTxn := t.calculateTotalTxnCurrentMonth(member.LineUserID)
+
 	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, *totalTxn, member.Remaining)
 	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
 	if err2 != nil {
-		fmt.Println(err2.Error())
+		log.Println(err2.Error())
 	}
 	return nil
 }
@@ -98,12 +101,34 @@ func (t TransactionService) GetTransactionByID(ID string) (*models.Transaction, 
 }
 
 func (t TransactionService) EditTransactionByID(req models.AddTransactionRequest, id string, member models.Member) (*models.Transaction, error) {
-
-	result, err := t.Repo.Transaction.UpdateTransactionByID(req.Amount, req.Category, req.Memo, id)
+	_, err := t.Repo.Transaction.UpdateTransactionByID(req.Amount, req.Category, req.Memo, id)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(result)
+
+	totalTxn := t.calculateTotalTxnCurrentMonth(member.LineUserID)
+	// Re calulate Remaining
+	totalIncome := 0.0
+	incomes, err := t.Repo.Transaction.FilterIncomeCurrentMonth(member.LineUserID)
+	if err != nil {
+		log.Printf("err Get income : %v", err.Error())
+	}
+	for _, income := range incomes {
+		amount, _ := strconv.ParseFloat(income.Amount, 64)
+		totalIncome += amount
+	}
+	remaining := totalIncome - *totalTxn
+	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, remaining); err != nil {
+		log.Printf("UpdateRemainingBalance error %v", err.Error())
+		return nil, err
+	}
+
+	flexMessage := utils.TransactionCompleteFlex(req.Amount, req.Category, req.Memo, *totalTxn, remaining)
+	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err2 != nil {
+		log.Println(err.Error())
+	}
+
 	return nil, nil
 }
 
@@ -116,6 +141,7 @@ func (t TransactionService) AddIncome(req models.Income, member models.Member) e
 		Memo:       req.Memo,
 		LineUserId: member.LineUserID,
 		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 		Type:       "income",
 	}
 	if err := t.Repo.Transaction.InsertTransaction(transaction); err != nil {
@@ -128,5 +154,95 @@ func (t TransactionService) AddIncome(req models.Income, member models.Member) e
 		return err
 	}
 
+	incomes, err := t.Repo.Transaction.FilterIncomeCurrentMonth(member.LineUserID)
+	if err != nil {
+		log.Printf("FilterIncomeCurrentMonth error : %v", err.Error())
+	}
+	totalIncome := 0.0
+	for _, income := range incomes {
+		amount, _ := strconv.ParseFloat(income.Amount, 64)
+		totalIncome += amount
+	}
+
+	flexMessage := utils.IncomeCompleteFlex(req.Amount, req.Month, req.Memo, totalIncome)
+	res, err := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	log.Printf("PushMessage success : %v", res.RequestID)
+
 	return nil
+}
+
+func (t TransactionService) SummaryCurrentMonth(replyToken, line_user_id string) {
+
+	txns, err := t.Repo.Transaction.FilterTransactionCurrentMonth(line_user_id)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	total := 0.0
+	for _, txn := range txns {
+		amount, _ := strconv.ParseFloat(txn.Amount, 64)
+		total += amount
+	}
+
+	incomes, err := t.Repo.Transaction.FilterIncomeCurrentMonth(line_user_id)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	totalIncome := 0.0
+	for _, income := range incomes {
+		amount, _ := strconv.ParseFloat(income.Amount, 64)
+		totalIncome += amount
+	}
+	remaining := totalIncome - total
+
+	flexmessage := utils.SummaryCurrentMonth(txns, incomes, total, remaining)
+	res, err := t.linebotService.ReplyMessage(replyToken, flexmessage)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	log.Printf("Reply message done : %v", res.RequestID)
+}
+
+func (t TransactionService) GetIncomeByID(ID string) (*models.Income, error) {
+	income, err := t.Repo.Transaction.GetIncomeByID(ID)
+	if err != nil {
+		return nil, err
+	}
+	return income, nil
+}
+
+func (t TransactionService) EditIncomeByID(req models.Income, id string, member models.Member) (*models.Income, error) {
+	_, err := t.Repo.Transaction.UpdateIncomeByID(req.Amount, req.Month, req.Memo, id)
+	if err != nil {
+		return nil, err
+	}
+
+	totalTxn := t.calculateTotalTxnCurrentMonth(member.LineUserID)
+	// Re calulate Remaining
+	totalIncome := 0.0
+	incomes, err := t.Repo.Transaction.FilterIncomeCurrentMonth(member.LineUserID)
+	if err != nil {
+		log.Printf("err Get income : %v", err.Error())
+	}
+	for _, income := range incomes {
+		amount, _ := strconv.ParseFloat(income.Amount, 64)
+		totalIncome += amount
+	}
+	remaining := totalIncome - *totalTxn
+	if err := t.Repo.Member.UpdateRemainingBalance(member.LineUserID, remaining); err != nil {
+		log.Printf("UpdateRemainingBalance error %v", err.Error())
+		return nil, err
+	}
+
+	flexMessage := utils.IncomeCompleteFlex(req.Amount, req.Month, req.Memo, totalIncome)
+	_, err2 := t.linebotService.PushMessage(member.LineUserID, flexMessage)
+	if err2 != nil {
+		log.Println(err.Error())
+	}
+
+	return nil, nil
 }

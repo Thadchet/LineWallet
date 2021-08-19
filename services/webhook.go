@@ -7,32 +7,35 @@ import (
 	"line-wallet/models"
 	"line-wallet/repository"
 	"line-wallet/utils"
+	"log"
 
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
 type WebhookService struct {
-	Conf              config.Config
-	Repo              repository.Repository
-	LinebotService    utils.ILineService
-	PlayGroundService utils.PlayGroundService
+	Conf               config.Config
+	Repo               repository.Repository
+	LinebotService     utils.ILineService
+	PlayGroundService  utils.PlayGroundService
+	TransactionService ITransactionService
 }
 
 type IWebhookService interface {
 	ReplyMessageAction(linebot *linebot.Client, replyToken string)
 	Follow(replyToken string, userId string) error
-	HandleTextMessage(replyToken string, message *linebot.TextMessage)
+	HandleTextMessage(replyToken string, message *linebot.TextMessage, event *linebot.Event)
 }
 
-func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.TextMessage) {
+func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.TextMessage, event *linebot.Event) {
 	command := message.Text
 	switch command {
 	case "Bk", "bk", "BK":
 		var ReplyButtons []*linebot.QuickReplyButton
 		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("💸 เพิ่มรายการ", constants.HomePage)))
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("💰 เพิ่มรายรับ", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("💰 เพิ่มรายรับ", constants.AddIncomePage)))
 		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewURIAction("⚙️ แก้ไขรายการ", constants.EditPage)))
-		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("📊 สรุปรายเดือน", "Hello")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("📊 สรุปเดือนนี้", "#สรุปเดือนนี้")))
+		ReplyButtons = append(ReplyButtons, linebot.NewQuickReplyButton("", linebot.NewMessageAction("📊 สรุปรายเดือนทั้งหมด", "#สรุปรายเดือนทั้งหมด")))
 
 		replyMessage := linebot.NewTextMessage(constants.ReplyMessage).WithQuickReplies(linebot.NewQuickReplyItems(ReplyButtons...))
 		_, err := w.LinebotService.ReplyMessage(replyToken, replyMessage)
@@ -41,6 +44,8 @@ func (w WebhookService) HandleTextMessage(replyToken string, message *linebot.Te
 		}
 	case "#a":
 		w.PlayGroundService.HandlePlayground("#a", replyToken)
+	case "#สรุปเดือนนี้":
+		w.TransactionService.SummaryCurrentMonth(replyToken, event.Source.UserID)
 	default:
 		break
 	}
@@ -71,7 +76,7 @@ func (w WebhookService) Follow(replyToken string, userId string) error {
 		LineUserID:   profileFromLine.UserID,
 	}
 	if err := w.Repo.Member.CreateMember(member); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 	return nil

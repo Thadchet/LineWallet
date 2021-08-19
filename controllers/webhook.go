@@ -34,7 +34,7 @@ func (t WebhookHandler) HandleWebhook(c *gin.Context) {
 			switch message := message.(type) {
 			case *linebot.TextMessage:
 				replyToken := event.ReplyToken
-				t.webhookService.HandleTextMessage(replyToken, message)
+				t.webhookService.HandleTextMessage(replyToken, message, event)
 			case *linebot.ImageMessage:
 				fmt.Println(message)
 			}

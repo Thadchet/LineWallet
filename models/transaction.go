@@ -18,7 +18,8 @@ type Transaction struct {
 	Category   string             `json:"category"`
 	Memo       string             `json:"memo"`
 	LineUserId string             `json:"line_user_id"`
-	CreatedAt  time.Time          `json:"create_at"`
+	CreatedAt  time.Time          `json:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at"`
 	Type       string             `json:"type"`
 }
 
@@ -28,6 +29,7 @@ type Income struct {
 	Month      string             `json:"month"`
 	Memo       string             `json:"memo"`
 	LineUserId string             `json:"line_user_id"`
-	CreatedAt  time.Time          `json:"create_at"`
-	Type       string             `json:"type"`
+	CreatedAt  time.Time          `json:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at"`
+	Type string `json:"type"`
 }

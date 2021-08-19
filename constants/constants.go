@@ -5,8 +5,9 @@ const (
 )
 
 const (
-	HomePage string = "https://liff.line.me/1656313689-ZzlA4z5z"
-	EditPage string = "https://liff.line.me/1656313689-8lvPX3x3"
+	HomePage      string = "https://liff.line.me/1656313689-ZzlA4z5z"
+	EditPage      string = "https://liff.line.me/1656313689-8lvPX3x3"
+	AddIncomePage string = "https://liff.line.me/1656313689-7JLbdPjP"
 )
 
 const (

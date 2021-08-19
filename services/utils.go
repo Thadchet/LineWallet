@@ -28,10 +28,11 @@ func NewService(conf config.Config, linebotService utils.ILineService, repo repo
 	}
 
 	webhookService := WebhookService{
-		Conf:              conf,
-		Repo:              repo,
-		LinebotService:    linebotService,
-		PlayGroundService: playGroundService,
+		Conf:               conf,
+		Repo:               repo,
+		LinebotService:     linebotService,
+		PlayGroundService:  playGroundService,
+		TransactionService: transactionService,
 	}
 
 	memberService := MemberService{

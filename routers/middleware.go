@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,7 +25,7 @@ func AuthMember() gin.HandlerFunc {
 			c.AbortWithStatusJSON(500, err)
 		}
 		if h.LineUserId == "" {
-			fmt.Println("Line user id not found")
+			log.Println("Line user id not found")
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Unauthorize missing line_user_id",
 			})
